@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Pipeline Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .button.secondary {
+            background: #6c757d;
+        }
+
+        .button.success {
+            background: #28a745;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .log-info { color: #4ec9b0; }
+        .log-success { color: #4ec9b0; }
+        .log-error { color: #f48771; }
+        .log-warning { color: #dcdcaa; }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .search-results {
+            margin-top: 15px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-item .doc-name {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .result-item .relevance {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .result-item .text {
+            color: #333;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Real Estate Document Processing Pipeline</h1>
+            <p>Dashboard for monitoring and querying the pipeline</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>PostgreSQL Records</h3>
+                <div class="value" id="postgresCount">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>ChromaDB Chunks</h3>
+                <div class="value" id="chromaCount">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Documents Processed</h3>
+                <div class="value" id="docCount">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pipeline Status</h3>
+                <div class="value" id="pipelineStatus" style="font-size: 18px;">Ready</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Pipeline Controls</h2>
+            <button class="button" onclick="runPipeline()">🚀 Run Full Pipeline</button>
+            <button class="button secondary" onclick="refreshStats()">🔄 Refresh Stats</button>
+            <button class="button secondary" onclick="clearLogs()">🗑️ Clear Logs</button>
+            <button class="button" onclick="clearDatabases()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🗑️ Clear All Databases</button>
+            <div id="pipelineLog" class="log-container" style="display: none;"></div>
+        </div>
+
+        <div class="section">
+            <h2>PostgreSQL Data - Project Tasks</h2>
+            <button class="button" onclick="loadProjectTasks()">Load Project Tasks</button>
+            <div id="projectTasksTable"></div>
+        </div>
+
+        <div class="section">
+            <h2>PostgreSQL Data - Cost Items</h2>
+            <button class="button" onclick="loadCostItems()">Load Cost Items</button>
+            <div id="costItemsTable"></div>
+        </div>
+
+        <div class="section">
+            <h2>ChromaDB - Semantic Search</h2>
+            <input type="text" class="search-box" id="searchQuery" placeholder="Enter your query (e.g., 'What are the project tasks?')" onkeypress="handleSearchKeyPress(event)">
+            <button class="button" onclick="performSearch()">🔍 Search</button>
+            <div id="searchResults" class="search-results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api';
+
+        async function refreshStats() {
+            try {
+                // Get ChromaDB stats
+                const chromaResponse = await fetch(`${API_BASE}/chroma-stats/`);
+                const chromaData = await chromaResponse.json();
+                document.getElementById('chromaCount').textContent = chromaData.total_chunks || 0;
+
+                // Get PostgreSQL counts
+                const tasksResponse = await fetch(`${API_BASE}/project-tasks/?limit=1`);
+                const tasksData = await tasksResponse.json();
+                const tasksCount = tasksData.tasks ? tasksData.tasks.length : 0;
+
+                const itemsResponse = await fetch(`${API_BASE}/cost-items/?limit=1`);
+                const itemsData = await itemsResponse.json();
+                const itemsCount = itemsData.items ? itemsData.items.length : 0;
+
+                document.getElementById('postgresCount').textContent = tasksCount + itemsCount;
+            } catch (error) {
+                console.error('Error refreshing stats:', error);
+            }
+        }
+
+        async function runPipeline() {
+            const logContainer = document.getElementById('pipelineLog');
+            logContainer.style.display = 'block';
+            logContainer.innerHTML = '<div class="log-entry log-info">🚀 Starting pipeline...</div>';
+            
+            document.getElementById('pipelineStatus').textContent = 'Running...';
+            document.getElementById('pipelineStatus').style.color = '#ffc107';
+
+            try {
+                const response = await fetch(`${API_BASE}/process-all-documents/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog('✅ Pipeline completed successfully!', 'success');
+                    addLog(`📊 Processed ${data.successful}/${data.total} documents`, 'success');
+                    document.getElementById('pipelineStatus').textContent = 'Completed';
+                    document.getElementById('pipelineStatus').style.color = '#28a745';
+                    refreshStats();
+                } else {
+                    addLog('❌ Pipeline failed', 'error');
+                    document.getElementById('pipelineStatus').textContent = 'Failed';
+                    document.getElementById('pipelineStatus').style.color = '#dc3545';
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+                document.getElementById('pipelineStatus').textContent = 'Error';
+                document.getElementById('pipelineStatus').style.color = '#dc3545';
+            }
+        }
+
+        async function loadProjectTasks() {
+            try {
+                const response = await fetch(`${API_BASE}/project-tasks/?limit=20`);
+                const data = await response.json();
+                
+                if (data.tasks && data.tasks.length > 0) {
+                    let html = '<table><thead><tr><th>Task ID</th><th>Task Name</th><th>Duration (Days)</th><th>Start Date</th><th>Finish Date</th></tr></thead><tbody>';
+                    data.tasks.forEach(task => {
+                        html += `<tr>
+                            <td>${task.task_id}</td>
+                            <td>${task.task_name}</td>
+                            <td>${task.duration_days}</td>
+                            <td>${task.start_date}</td>
+                            <td>${task.finish_date}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('projectTasksTable').innerHTML = html;
+                } else {
+                    document.getElementById('projectTasksTable').innerHTML = '<p>No project tasks found. Run the pipeline first.</p>';
+                }
+            } catch (error) {
+                document.getElementById('projectTasksTable').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function loadCostItems() {
+            try {
+                const response = await fetch(`${API_BASE}/cost-items/?limit=20`);
+                const data = await response.json();
+                
+                if (data.items && data.items.length > 0) {
+                    let html = '<table><thead><tr><th>Item Name</th><th>Quantity</th><th>Unit Price (Yen)</th><th>Total Cost (Yen)</th><th>Cost Type</th></tr></thead><tbody>';
+                    data.items.forEach(item => {
+                        html += `<tr>
+                            <td>${item.item_name}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.unit_price_yen.toLocaleString()}</td>
+                            <td>${item.total_cost_yen.toLocaleString()}</td>
+                            <td>${item.cost_type}</td>
+                        </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('costItemsTable').innerHTML = html;
+                } else {
+                    document.getElementById('costItemsTable').innerHTML = '<p>No cost items found. Run the pipeline first.</p>';
+                }
+            } catch (error) {
+                document.getElementById('costItemsTable').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('searchQuery').value;
+            if (!query.trim()) {
+                alert('Please enter a search query');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '<p>Searching...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE}/semantic-search/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: query, n_results: 5})
+                });
+                
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    let html = `<p><strong>Found ${data.results.length} results:</strong></p>`;
+                    data.results.forEach((result, idx) => {
+                        const relevance = ((1 - result.distance) * 100).toFixed(1);
+                        html += `<div class="result-item">
+                            <div class="doc-name">${idx + 1}. ${result.document_name || 'Unknown'}</div>
+                            <div class="relevance">Relevance: ${relevance}%</div>
+                            <div class="text">${result.chunk_text.substring(0, 300)}...</div>
+                        </div>`;
+                    });
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<p>No results found. Make sure documents are processed.</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function handleSearchKeyPress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('pipelineLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('pipelineLog').innerHTML = '';
+        }
+
+        async function clearDatabases() {
+            if (!confirm('⚠️ WARNING: This will delete ALL data from PostgreSQL and ChromaDB. Are you sure you want to continue?')) {
+                return;
+            }
+
+            const logContainer = document.getElementById('pipelineLog');
+            logContainer.style.display = 'block';
+            logContainer.innerHTML = '<div class="log-entry log-info">🗑️ Clearing databases...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/clear-databases/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addLog('✅ Databases cleared successfully!', 'success');
+                    addLog(`🗑️ PostgreSQL: ${data.postgres.tasks_deleted || 0} tasks, ${data.postgres.items_deleted || 0} items, ${data.postgres.rules_deleted || 0} rules deleted`, 'success');
+                    addLog(`🗑️ ChromaDB: ${data.chroma.chunks_deleted || 0} chunks deleted`, 'success');
+                    refreshStats();
+                    // Clear tables
+                    document.getElementById('projectTasksTable').innerHTML = '';
+                    document.getElementById('costItemsTable').innerHTML = '';
+                    document.getElementById('searchResults').innerHTML = '';
+                } else {
+                    addLog(`❌ Error clearing databases: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Load stats on page load
+        window.onload = function() {
+            refreshStats();
+        };
+    </script>
+</body>
+</html>
+

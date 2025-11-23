@@ -1,0 +1,50 @@
+# Core Framework - Match AI_Agents conda env versions
+Django==5.0.1
+djangorestframework==3.14.0
+prefect==3.0.0
+
+# Data Processing - Match AI_Agents conda env versions
+dlt[postgres]==0.4.0
+pandas==2.2.3
+numpy==1.26.4
+
+# PDF Processing - Match AI_Agents conda env versions
+unstructured[pdf]==0.18.15
+pdfplumber==0.10.3
+PyPDF2==3.0.1
+camelot-py[cv]==0.11.0
+
+# Database - Match AI_Agents conda env versions
+psycopg2-binary==2.9.11
+sqlalchemy==2.0.35
+
+# Vector Database
+chromadb==0.4.22
+sentence-transformers==5.1.1
+
+# LLM and AI - Match AI_Agents conda env versions (optional)
+langchain==0.3.7
+langchain-community==0.3.5
+langchain-openai==0.2.6
+langgraph==0.2.45
+openai==1.55.3
+groq==0.33.0
+
+# Utilities - Match AI_Agents conda env versions
+python-dotenv==0.21.0
+loguru==0.7.2
+pydantic==2.12.2
+pydantic-settings==2.10.1
+jinja2==3.1.6
+requests==2.32.3
+aiohttp==3.11.13
+
+# Testing
+pytest==7.4.4
+pytest-django==4.8.0
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+
+# API and Web
+corsheaders==4.3.1
+whitenoise==6.6.0

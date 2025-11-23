@@ -1,0 +1,4 @@
+"""
+Django REST API endpoints
+"""
+
